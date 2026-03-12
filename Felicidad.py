@@ -1,3 +1,4 @@
+# %%
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -8,7 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 df = pd.read_csv('3462_num.csv', sep=';', low_memory=False)
 
 # Definimos variables según tu reto
-variables_salud = ['V32', 'V33', 'V34', 'V35', 'V36', 'V37', 'V52']
+variables_salud = ['V24', 'V32', 'V33', 'V34', 'V35', 'V36', 'V37', 'V49', 'V52']
 target = 'V1'
 
 # 2. LIMPIEZA PROFUNDA (Evita el error de la imagen)
@@ -23,6 +24,14 @@ df_model = df.dropna(subset=variables_salud + [target])
 
 for col in variables_salud + [target]:
     df_model = df_model[df_model[col] <= 7] # Filtramos códigos de no respuesta
+
+
+# %%
+# 3.5 ONE-HOT ENCODING PARA V52 (binaria: 1=Sí, 2=No)
+df_model = pd.get_dummies(df_model, columns=['V52'], prefix='V52', drop_first=True)
+# Actualizamos la lista de variables reemplazando 'V52' por las columnas dummy generadas
+cols_v52 = [c for c in df_model.columns if c.startswith('V52_')]
+variables_salud = [c for v in variables_salud for c in (cols_v52 if v == 'V52' else [v])]
 
 # 4. AGRUPACIÓN EN 3 CLASES
 def categorizar(val):
