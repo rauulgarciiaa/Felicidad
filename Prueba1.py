@@ -1,4 +1,4 @@
-
+# %%
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -9,6 +9,8 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
+
+# %%
 # 1. Carga de datos
 df = pd.read_csv('3462_num.csv', sep=';', low_memory=False)
 
@@ -16,11 +18,13 @@ df = pd.read_csv('3462_num.csv', sep=';', low_memory=False)
 variables_salud = ['V32', 'V33', 'V34', 'V35', 'V36', 'V37', 'V52']
 target = 'V1'
 
+# %%
 # 2. LIMPIEZA PROFUNDA (Evita el error de la imagen)
 # Convertimos todo a numérico. Los espacios "" o textos raros se vuelven NaN automáticamente
 for col in variables_salud + [target]:
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
+# %%
 # 3. FILTRADO DE VALORES DE ENCUESTA
 # En el CIS, 8 y 9 suelen ser "No sabe/No contesta". Los eliminamos.
 # También eliminamos las filas que quedaron con NaN tras el paso anterior.
@@ -37,7 +41,8 @@ cols_v52 = [c for c in df_model.columns if c.startswith('V52_')]
 variables_salud = [c for v in variables_salud for c in (cols_v52 if v == 'V52' else [v])]
 
 
-# 4. AGRUPACIÓN EN 3 CLASES o BINARIA
+# %%
+# 4. AGRUPACIÓN EN 3 CLASES
 def categorizar_multiclass(val):
     if val <= 2: return 'Feliz'
     if val <= 4: return 'Medianamente Feliz'
@@ -57,6 +62,7 @@ else:
     df_model = df_model.copy()
     df_model['Clase_Felicidad'] = df_model[target].apply(categorizar_binary)
 
+# %%
 # 5. MODELO
 X = df_model[variables_salud]
 y = df_model['Clase_Felicidad']
@@ -75,6 +81,9 @@ modelos = {
     'LogisticRegression': LogisticRegression(random_state=42, max_iter=1000),
     'GradientBoosting': GradientBoostingClassifier(n_estimators=100, random_state=42)
 }
+
+
+
 
 for nombre, modelo in modelos.items():
     if nombre == 'SVM':
