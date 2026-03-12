@@ -9,7 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 df = pd.read_csv('3462_num.csv', sep=';', low_memory=False)
 
 # Definimos variables según tu reto
-variables_salud = ['V24', 'V32', 'V33', 'V34', 'V35', 'V36', 'V37', 'V49', 'V52']
+variables_salud = ['V24', 'V33', 'V34', 'V35', 'V36', 'V37', 'V48', 'V49', 'V50', 'V51', 'V52']
 target = 'V1'
 
 # 2. LIMPIEZA PROFUNDA (Evita el error de la imagen)
