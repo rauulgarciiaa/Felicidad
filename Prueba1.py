@@ -29,9 +29,13 @@ df_model = df.dropna(subset=variables_salud + [target])
 for col in variables_salud + [target]:
     df_model = df_model[df_model[col] <= 7] # Filtramos códigos de no respuesta
 
-# 3.5 NORMALIZAR V52 A ESCALA 1-7
-# V52 es binaria (1=Sí, 2=No), la convertimos a escala comparable (1-7)
-df_model['V52'] = df_model['V52'].map({1: 7, 2: 1})  # Sí→7 (positivo), No→1 (negativo)
+# 3.5 ONE-HOT ENCODING PARA V52
+# V52 es binaria (1=Sí, 2=No); generamos columnas dummy para que el modelo trate cada categoría por separado
+df_model = pd.get_dummies(df_model, columns=['V52'], prefix='V52')
+# actualizar la lista de variables de entrada, reemplazando 'V52' por las columnas dummy recién creadas
+cols_v52 = [c for c in df_model.columns if c.startswith('V52_')]
+variables_salud = [c for v in variables_salud for c in (cols_v52 if v == 'V52' else [v])]
+
 
 # 4. AGRUPACIÓN EN 3 CLASES o BINARIA
 def categorizar_multiclass(val):
