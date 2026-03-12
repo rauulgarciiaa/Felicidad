@@ -33,7 +33,10 @@ df_model = pd.get_dummies(df_model, columns=['V52'], prefix='V52', drop_first=Tr
 cols_v52 = [c for c in df_model.columns if c.startswith('V52_')]
 variables_salud = [c for v in variables_salud for c in (cols_v52 if v == 'V52' else [v])]
 
+
+# %%
 # 4. AGRUPACIÓN EN 3 CLASES
+
 def categorizar(val):
     if val <= 2: return 'Feliz'
     if val <= 4: return 'Medianamente Feliz'
