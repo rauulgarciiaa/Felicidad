@@ -20,7 +20,7 @@ for col in variables_salud + [target]:
 # 3. FILTRADO DE VALORES DE ENCUESTA
 # En el CIS, 8 y 9 suelen ser "No sabe/No contesta". Los eliminamos.
 # También eliminamos las filas que quedaron con NaN tras el paso anterior.
-df_model = df.dropna(subset=variables_salud + [target])
+df_model = df[variables_salud + [target]].dropna()
 
 for col in variables_salud + [target]:
     df_model = df_model[df_model[col] <= 7] # Filtramos códigos de no respuesta
@@ -28,7 +28,7 @@ for col in variables_salud + [target]:
 
 # %%
 # 3.5 ONE-HOT ENCODING PARA V52 (binaria: 1=Sí, 2=No)
-df_model = pd.get_dummies(df_model, columns=['V52'], prefix='V52', drop_first=True)
+df_model = pd.get_dummies(df_model, columns=['V52'], prefix='V52')
 # Actualizamos la lista de variables reemplazando 'V52' por las columnas dummy generadas
 cols_v52 = [c for c in df_model.columns if c.startswith('V52_')]
 variables_salud = [c for v in variables_salud for c in (cols_v52 if v == 'V52' else [v])]
