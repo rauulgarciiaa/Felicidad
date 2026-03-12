@@ -98,6 +98,10 @@ for nombre, modelo in modelos.items():
     print(f"Margen de Error: {1 - accuracy_score(y_test, y_pred):.2%}")
     print("\nDesglose de aciertos por grupo:")
     print(classification_report(y_test, y_pred))
+    # Matriz de confusión como DataFrame
+    cm = confusion_matrix(y_test, y_pred, labels=np.unique(y_test))
+    print("Matriz de confusión:")
+    print(pd.DataFrame(cm, index=np.unique(y_test), columns=np.unique(y_test)))
     
     if hasattr(modelo, 'feature_importances_'):
         importancias = pd.Series(modelo.feature_importances_, index=variables_salud).sort_values(ascending=False)
