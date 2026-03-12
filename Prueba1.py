@@ -38,19 +38,9 @@ def categorizar_multiclass(val):
     if val <= 4: return 'Medianamente Feliz'
     return 'Infeliz'
 
-def categorizar_binary(val):
-    if val <= 4: return 'Feliz'  # Feliz + Medianamente Feliz
-    return 'Infeliz'
-
-# Elegir clasificación: 'multiclass' o 'binary'
-clasificacion = 'multiclass'  # Cambia a 'multiclass' si quieres 3 clases
-
-if clasificacion == 'multiclass':
-    df_model = df_model.copy()
-    df_model['Clase_Felicidad'] = df_model[target].apply(categorizar_multiclass)
-else:
-    df_model = df_model.copy()
-    df_model['Clase_Felicidad'] = df_model[target].apply(categorizar_binary)
+# Siempre multiclass para one-vs-rest
+df_model = df_model.copy()
+df_model['Clase_Felicidad'] = df_model[target].apply(categorizar_multiclass)
 
 # 5. MODELO
 X = df_model[variables_salud]
@@ -58,38 +48,19 @@ y = df_model['Clase_Felicidad']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Escalar datos para SVM
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-# Modelos a probar
-modelos = {
-    'RandomForest': RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42),
-    'SVM': SVC(kernel='rbf', C=1.0, random_state=42),
-    'LogisticRegression': LogisticRegression(random_state=42, max_iter=1000),
-    'GradientBoosting': GradientBoostingClassifier(n_estimators=100, random_state=42)
-}
-
-for nombre, modelo in modelos.items():
-    if nombre == 'SVM':
-        modelo.fit(X_train_scaled, y_train)
-        y_pred = modelo.predict(X_test_scaled)
-    else:
-        modelo.fit(X_train, y_train)
-        y_pred = modelo.predict(X_test)
-    
-    print(f"\n--- RESULTADO CON {nombre} ({clasificacion}) ---")
-    print(f"Precisión: {accuracy_score(y_test, y_pred):.2%}")
-    print(f"Margen de Error: {1 - accuracy_score(y_test, y_pred):.2%}")
-    print("\nDesglose de aciertos por grupo:")
-    print(classification_report(y_test, y_pred))
-    
-    if hasattr(modelo, 'feature_importances_'):
-        importancias = pd.Series(modelo.feature_importances_, index=variables_salud).sort_values(ascending=False)
-        print(f"\nRanking de preguntas que más influyen en la felicidad ({nombre}):")
-        print(importancias)
-    elif nombre == 'LogisticRegression':
-        importancias = pd.Series(np.abs(modelo.coef_[0]), index=variables_salud).sort_values(ascending=False)
-        print(f"\nRanking de coeficientes absolutos ({nombre}):")
-        print(importancias)
+# Entrenamiento one-vs-rest para cada clase
+clases = y.unique()
+for clase in clases:
+    y_train_bin = (y_train == clase).astype(int)
+    y_test_bin = (y_test == clase).astype(int)
+    modelo = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)
+    modelo.fit(X_train, y_train_bin)
+    y_pred = modelo.predict(X_test)
+    print(f"\n--- MODELO PARA '{clase}' (vs resto) ---")
+    print(f"Precisión: {accuracy_score(y_test_bin, y_pred):.2%}")
+    print(f"Margen de Error: {1 - accuracy_score(y_test_bin, y_pred):.2%}")
+    print("\nDesglose de aciertos:")
+    print(classification_report(y_test_bin, y_pred, target_names=[f"No {clase}", clase]))
+    importancias = pd.Series(modelo.feature_importances_, index=variables_salud).sort_values(ascending=False)
+    print(f"\nRanking de preguntas que más influyen en la predicción de '{clase}':")
+    print(importancias)
