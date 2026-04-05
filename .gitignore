@@ -1,0 +1,6 @@
+catboost_info/
+logs.log
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
